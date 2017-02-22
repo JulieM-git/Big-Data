@@ -9,7 +9,7 @@
 
 #### Diagramme EA ####
 
-![Diagramme EA](Diagramme_ea.png "Diagramme EA")
+![Diagramme EA](Images/Diagramme_ea.png "Diagramme EA")
 
 ## Intégration ##
 
@@ -28,7 +28,7 @@ COPY zip_codes FROM '/path/to/csv/ZIP_CODES.txt' DELIMITER ',' CSV;
 
 Mais la première étape est de faire le lien entre les deux tables pour pouvoir ajouter des coordonnées aux entreprises. Pour cela il faut comparer les adresses. Nous avons essayer d'assimiler les attributs.
 
-![Tableau comparatif](Tableau_comparatif.png "Tableau comparatif")
+![Tableau comparatif](Images/Tableau_comparatif.png "Tableau comparatif")
 
 L'idée serait de faire un script avant l'intégration de la base pour homogénéiser la structure des adresses :
 
@@ -102,8 +102,8 @@ fichier_sortie.close()
 ```
 Les bases manipulées après :
 
-![bano](bano_modif.png "Bano")
-![siren](siren_modif.png "Siren")
+![bano](Images/bano_modif.png "Bano")
+![siren](Images/siren_modif.png "Siren")
 
 Equivalent en SQL :
 ```SQL
@@ -257,7 +257,7 @@ AND distance <= 5000 ORDER BY distance ASC
 
 ## Dénormalisation ##
 
-![denormalisation](denormalisation.png)
+![denormalisation](Images/denormalisation.png)
 
 ## Synthèse des méthodes ##
 
