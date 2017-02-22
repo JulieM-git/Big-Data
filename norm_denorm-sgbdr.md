@@ -102,8 +102,8 @@ fichier_sortie.close()
 ```
 Les bases manipulées après :
 
-![bano](Images/bano_modif.PNG "Bano")
-![siren](Images/siren_modif.PNG "Siren")
+![bano](Images/Bano_modif.PNG "Bano")
+![siren](Images/Siren_modif.PNG "Siren")
 
 Equivalent en SQL :
 ```SQL
