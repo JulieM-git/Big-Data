@@ -257,7 +257,7 @@ AND distance <= 5000 ORDER BY distance ASC
 
 ## Dénormalisation ##
 
-![denormalisation](Images/Denormalisation.PNG)
+![denormalisation](Images/denormalisation.png)
 
 ## Synthèse des méthodes ##
 
