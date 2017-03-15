@@ -2,7 +2,7 @@
 
 ### Récupération des données ###
 
-*Sources* : [http://professionnels.ign.fr/bdalti](http://professionnels.ign.fr/bdalti) 
+*Sources* : [http://professionnels.ign.fr/bdalti](http://professionnels.ign.fr/bdalti)
 
 Données disponibles :
 - Petite zone en 25m
@@ -18,6 +18,8 @@ Voir l'installation/l'utilisation
 
 ### Conversion ASCII en XYZ ###
 
+Notre première étape est de convertir les données ASCII en données lisible est manipulation en base.
+
 Avant :
 ![](./Images/Alti_asc.png)
 ```sh
@@ -32,7 +34,39 @@ done
 Après :
 ![](./Images/Alti_csv.png)
 
-### Calcul des pentes avec GDAL ###
+### Calcul des pentes ###
+
+Les données sont disposées sous la forme d'une grille régulière. Il nous faut donc calculer la pente entre chaque point.
+![](./Images/Pente_1.png)
+
+```SQL
+SELECT * FROM data AS data1, data2
+WHERE  abs(data2.x - data1.x) <= resolution
+AND abs(data2.y - data1.y) <= resolution
+```
+Par exemple pour le point Z1, la sélection contiendrait Z4, Z5 et Z2. Il nous faudrait garder cette sélection et calculer la pente entre Z1 et les autres.
+```SQL
+ADD COLUMN pente double precision;
+SET pente = (abs(data2.z - data1.z)/sqrt(pow(data2.x - data1.x, 2) + pow(data2.y - data1.y, 2))) * 100;
+```
+On obtiendrait alors :
+```SQL
+CREATE TABLE table_pente AS (
+SELECT * FROM data AS data1, data2
+WHERE  abs(data2.x - data1.x) <= 0.75
+AND abs(data2.y - data1.y) <= 0.75)
+
+ALTER TABLE table_pente
+ADD COLUMN pente double precision;
+
+UPDATE table_pente
+SET pente = (abs(data2.z - data1.z)/sqrt(pow(data2.x - data1.x, 2) + pow(data2.y - data1.y, 2))) * 100;
+```
+
+#### Calcul des pentes avec GDAL ####
+
+*Source* :    [http://www.gdal.org/gdaldem.html](http://www.gdal.org/gdaldem.html)  
+[https://gdal.gloobe.org/gdal/gdaldem.html](https://gdal.gloobe.org/gdal/gdaldem.html)
 
 ![](./Images/GDAL_pente.png)
 ```sh
