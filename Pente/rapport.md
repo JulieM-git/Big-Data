@@ -1,5 +1,7 @@
 # Calcul de pente #
 
+## Données et algorithme ##
+
 ### Récupération des données ###
 
 *Sources* : [http://professionnels.ign.fr/bdalti](http://professionnels.ign.fr/bdalti)
@@ -14,31 +16,38 @@ Données disponibles :
 - postgis
 - gdal
 
-Voir l'installation/l'utilisation
+GDAL ([wiki](https://en.wikipedia.org/wiki/GDAL)) est un outil présent dans QGIS permettant de manipuler des données. Nous allons l'utiliser dans la suite du projet.
 
 ### Conversion ASCII en XYZ ###
 
 Notre première étape est de convertir les données ASCII en données lisible est manipulation en base.
 
-Avant :
+Avant la conversion :  
 ![](./Images/Alti_asc.png)
-```sh
-#! /bin/bash
 
-path='/home/julie/Documents/BDALTIV2_2-0_75M_ASC_LAMB93-IGN69_FRANCE_2017-01-04/BDALTIV2/1_DONNEES_LIVRAISON_2017-02-00100/BDALTIV2_MNT_75M_ASC_LAMB93_IGN69_FRANCE'
-folder='/home/julie/Documents/BD_alti'
-for filename in $path/*.asc; do
-  /usr/bin/gdal2xyz.py -csv $filename $folder/$(basename "$filename" .asc).csv
-done
+La fenêtre graphique de conversion permet de transformer un fichier ASCII en CSV ou TIF. Ici, par exemple, nous transformons un ASC en CSV:  
+![](./Images/GDAL_conversion.png)
+
+La ligne de commande correspondante suivante sera réutilisée et adaptée plus tard.
+```sh
+gdal2xyz.py -band 1 -csv /home/julie/Documents/BigData/BDALTIV2_2-0_25M_ASC_LAMB93-IGN69_31_2016-04-04/BDALTIV2/1_DONNEES_LIVRAISON_2016-11-00293/BDALTIV2_MNT_25M_ASC_LAMB93_IGN69_31/BDALTIV2_25M_FXX_0575_6275_MNT_LAMB93_IGN69.asc /home/julie/Documents/BigData/25_morceau/BDALTIV2_25M_FXX_0575_6275_MNT_LAMB93_IGN69.csv
 ```
-Après :
+Après la conversion :
 ![](./Images/Alti_csv.png)
 
 ### Calcul des pentes ###
 
-Les données sont disposées sous la forme d'une grille régulière. Il nous faut donc calculer la pente entre chaque point.
+#### Différentes méthodes de calcul de pentes ####
+
+Il y a différentes méthodes pour calculer un pente issue des données de MNT.  
+Les données sont disposées sous la forme d'une grille régulière, suivant un certain intervalle. Il nous faut donc calculer la pente entre chaque point.
+
+La plus simple est la suivante :   
+[http://www.lememento.fr/calcul-pente](http://www.lememento.fr/calcul-pente)  
+Dans notre cas, nous avons un problème de la forme suivante :
 ![](./Images/Pente_1.png)
 
+La première étape est de récupérer les points qui se succèdent.
 ```SQL
 SELECT * FROM data AS data1, data2
 WHERE  abs(data2.x - data1.x) <= resolution
@@ -47,7 +56,7 @@ AND abs(data2.y - data1.y) <= resolution
 Par exemple pour le point Z1, la sélection contiendrait Z4, Z5 et Z2. Il nous faudrait garder cette sélection et calculer la pente entre Z1 et les autres.
 ```SQL
 ADD COLUMN pente double precision;
-SET pente = (abs(data2.z - data1.z)/sqrt(pow(data2.x - data1.x, 2) + pow(data2.y - data1.y, 2))) * 100;
+SET pente = (abs(data2.z - data1.z) / sqrt(pow(data2.x - data1.x, 2) + pow(data2.y - data1.y, 2))) * 100;
 ```
 On obtiendrait alors :
 ```SQL
@@ -60,21 +69,30 @@ ALTER TABLE table_pente
 ADD COLUMN pente double precision;
 
 UPDATE table_pente
-SET pente = (abs(data2.z - data1.z)/sqrt(pow(data2.x - data1.x, 2) + pow(data2.y - data1.y, 2))) * 100;
+SET pente = (abs(data2.z - data1.z) / sqrt(pow(data2.x - data1.x, 2) + pow(data2.y - data1.y, 2))) * 100;
 ```
+
+Il y a d'autres méthodes plus recherchées et complexes.
 
 #### Calcul des pentes avec GDAL ####
 
-*Source* :    [http://www.gdal.org/gdaldem.html](http://www.gdal.org/gdaldem.html)  
+*Source* :    
+[http://www.gdal.org/gdaldem.html](http://www.gdal.org/gdaldem.html)  
 [https://gdal.gloobe.org/gdal/gdaldem.html](https://gdal.gloobe.org/gdal/gdaldem.html)
 
+GDAL propose une solution de calcul de pente :
 ![](./Images/GDAL_pente.png)
+
+La ligne de commande correspondante suivante sera réutilisée et adaptée plus tard.
 ```sh
 gdaldem slope /home/julie/Documents/BigData/25_morceau/pente_test.tif /home/julie/Documents/BigData/25_morceau/pente_test.tif -of GTiff -b 1 -s 1 -compute_edges -p
 ```
+On obtient le résultat suivant : 
 ![](./Images/Pente_csv.png)
 
 ### Découpage avec GDAL ###
+
+Nous allons commencer avec un échantillon de données.
 
 ![](./Images/GDAL_decoupage.png)
 ```sh
@@ -118,11 +136,17 @@ UPDATE pente
 SET geom = ST_SetSRID(ST_Point(cast(lon as double precision)
 ,cast(lat as double precision)), 4326);
 ```
+### Généralisation ###
+
+Avec les données en 75m de la France métropolitaine :
+- Conversion et calcul de pentes: voir [Script bash](./executable.sh)
+- Remplissage de la base de données : voir [Script bash](./base.sh)
+
+## Affichage et dynamisme ##
 
 ### Interaction en PHP ###  
 ```php
 <?php
-
 $conn_string = "host=localhost port=5432 dbname=bigdata user=julie password=julie";
 $dbconn = pg_connect($conn_string)
       or die("Connexion impossible");
