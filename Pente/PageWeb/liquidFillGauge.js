@@ -8,7 +8,7 @@
 function liquidFillGaugeDefaultSettings(){
     return {
         minValue: 0, // The gauge minimum value.
-        maxValue: 90, // The gauge maximum value.
+        maxValue: 100, // The gauge maximum value.
         circleThickness: 0.05, // The outer circle thickness as a percentage of it's radius.
         circleFillGap: 0.05, // The size of the gap between the outer circle and wave circle as a percentage of the outer circles radius.
         circleColor: "#178BCA", // The color of the outer circle.
@@ -24,7 +24,7 @@ function liquidFillGaugeDefaultSettings(){
         textVertPosition: .5, // The height at which to display the percentage text withing the wave circle. 0 = bottom, 1 = top.
         textSize: 1, // The relative height of the text to display in the wave circle. 1 = 50%
         valueCountUp: true, // If true, the displayed value counts up from 0 to it's final value upon loading. If false, the final value is displayed.
-        displayPercent: true, // If true, a % symbol is displayed after the value. !!!!!!!!!!!!!!!!!!!! ici °
+        displayPercent: true, // If true, a % symbol is displayed after the value.
         textColor: "#045681", // The color of the value text when the wave does not overlap it.
         waveTextColor: "#A4DBf8" // The color of the value text when the wave overlaps it.
     };
@@ -53,7 +53,7 @@ function loadLiquidFillGauge(elementId, value, config) {
     var textPixels = (config.textSize*radius/2);
     var textFinalValue = parseFloat(value).toFixed(2);
     var textStartValue = config.valueCountUp?config.minValue:textFinalValue;
-    var percentText = config.displayPercent?"°":"";
+    var percentText = config.displayPercent?"%":"";
     var circleThickness = config.circleThickness * radius;
     var circleFillGap = config.circleFillGap * radius;
     var fillCircleMargin = circleThickness + circleFillGap;
