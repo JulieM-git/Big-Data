@@ -1,6 +1,7 @@
 <!-- PHP connexion -->
 <?php
   $conn_string = "host=localhost port=5432 dbname=bigdata user=julie password=julie";
+  echo("<script>console.log('PHP: ".$conn_string."');</script>");
   $dbconn = pg_connect($conn_string)
         or die("Connexion impossible");
   echo 'Connexion réussie';

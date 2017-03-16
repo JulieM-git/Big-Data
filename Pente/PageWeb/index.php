@@ -10,6 +10,12 @@
 		<script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
 		<script src="http://d3js.org/d3.v3.min.js" language="JavaScript"></script>
     <script src="liquidFillGauge.js" language="JavaScript"></script>
+		<script type="text/javascript" src="https://code.jquery.com/jquery-1.11.1.js"></script>
+		<script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
+<script src="http://leaflet.github.io/Leaflet.heat/dist/leaflet-heat.js"></script>
+
+		<script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/jquery-csv/0.71/jquery.csv-0.71.min.js"></script>
+		<script src="leaflet-heat.js"></script>
 		<script src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script>
 
 		<!-- Insertion des scripts js -->
@@ -86,8 +92,10 @@
 					<div class="col-md-4">
 						<div class='container-fluid'>
 							<div class="row" style="margin:5%; min-height:50px;">
-								<svg id="fillgauge" width="100%" height="100"></svg>
-								<p style="text-align:center; font-size:160%; color:	#8B0000;">Pente moyenne</p>
+									<svg id="fillgaugemoy" width="50%" height="100"></svg>
+									<p style="text-align:center; font-size:160%; color:	#FF8C00;">Pente moyenne</p>
+									<svg id="fillgaugemax" width="50%" height="100"></svg>
+									<p style="text-align:center; font-size:160%; color:	#8B0000;">Pente maximale</p>
 							</div>
 							<div class="row" style="margin:auto; min-height:50px;">
 								<svg id="diagramme" width="100%" height="400"></svg>
@@ -105,23 +113,36 @@
 			/**
 				* Jauge Pente Moyenne
 			**/
-			var pente_moyenne = 35.56;
-			var config = liquidFillGaugeDefaultSettings();
-			config.circleColor = "#B22222";
-			config.textColor = "#B22222";
-			config.waveTextColor = "#FFAAAA";
-			config.waveColor = "#B22222";
-			config.circleThickness = 0.1;
-			config.waveAnimateTime = 1000;
-			var gauge = loadLiquidFillGauge("fillgauge", pente_moyenne, config);
+			var pente_moyenne = 2.22;
+			var pente_max = 26.97;
+
+			var config_moy = liquidFillGaugeDefaultSettings();
+			config_moy.maxValue=30 ;
+			config_moy.circleColor = "#FF8C00";
+			config_moy.textColor = "#FF8C00";
+			config_moy.waveTextColor = "#FFAAAA";
+			config_moy.waveColor = "#FF8C00";
+			config_moy.circleThickness = 0.1;
+			config_moy.waveAnimateTime = 1000;
+			var gauge_moy = loadLiquidFillGauge("fillgaugemoy", pente_moyenne, config_moy);
+
+			var config_max = liquidFillGaugeDefaultSettings();
+			config_max.maxValue=30 ;
+			config_max.circleColor = "#B22222";
+			config_max.textColor = "#B22222";
+			config_max.waveTextColor = "#FFAAAA";
+			config_max.waveColor = "#B22222";
+			config_max.circleThickness = 0.1;
+			config_max.waveAnimateTime = 1000;
+			var gauge_max = loadLiquidFillGauge("fillgaugemax", pente_max, config_max);
 
 			/**
 				* Diagramme Pente
 			**/
 
 			var margin = {top: 40, right: 20, bottom: 20, left: 40},
-			    width = 400 - margin.left - margin.right,
-			    height = 300 - margin.top - margin.bottom;
+			    width = 400 ,
+			    height = 300;
 
 
 			var x = d3.scale.ordinal()
@@ -173,7 +194,7 @@
 			      .attr("x", function(d) { return x(d.degre); })
 			      .attr("width", x.rangeBand())
 			      .attr("y", function(d) { return y(d.number); })
-			      .attr("height", function(d) { return height - y(d.number); })
+			      .attr("height", function(d) { if( height - y(d.number) > 0){return height - y(d.number);} else{ return 0;} })
 			      .on('mouseover', tip.show)
 			      .on('mouseout', tip.hide)
 
