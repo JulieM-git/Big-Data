@@ -16,4 +16,10 @@ Récupération de dalle à 75 m et à 25 m.
 
 6 - Faire une page html, css, javascript pour afficher les résultats  
 6.1 - Affichage Carte de pentes avec couleurs (intéractive ?)  
-6.2 - 
+Example:  
+[D3.js](https://bl.ocks.org/mbostock/4060606)  
+[Leaflet](http://leafletjs.com/examples/choropleth/)   
+6.2 - Affichage diagrammes  
+[D3.js](https://d3js.org/)   
+6.3 - Requêter le serveur  
+[Aide](http://io.gchatelier.fr/blog/representer-un-resultat-de-requetes-spatiales-sous-postgresql-postgis-depuis-un-client-leaflet/)  
