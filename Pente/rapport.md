@@ -87,7 +87,7 @@ La ligne de commande correspondante suivante sera réutilisée et adaptée plus 
 ```sh
 gdaldem slope /home/julie/Documents/BigData/25_morceau/pente_test.tif /home/julie/Documents/BigData/25_morceau/pente_test.tif -of GTiff -b 1 -s 1 -compute_edges -p
 ```
-On obtient le résultat suivant : 
+On obtient le résultat suivant :
 ![](./Images/Pente_csv.png)
 
 ### Découpage avec GDAL ###
@@ -105,7 +105,7 @@ gdal_translate -of GTiff -ot Float32 -projwin 582412.5 6258787.5 586562.5 625533
 psql bigdata;
 
 ##Activation de l'extension PostGIS
-bigdata= CREATE EXTENSION postgis;
+CREATE EXTENSION postgis;
 
 ##Creation de la base MNT
 CREATE TABLE test (
@@ -134,7 +134,7 @@ ADD COLUMN geom geometry(Point, 4326);
 ##Remplissage de la colonne
 UPDATE pente
 SET geom = ST_SetSRID(ST_Point(cast(lon as double precision)
-,cast(lat as double precision)), 4326);
+,cast(lat as double precision)), 4326)::geography;
 ```
 ### Généralisation ###
 

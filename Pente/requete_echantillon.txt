@@ -1,0 +1,19 @@
+CREATE EXTENSION postgis;
+
+CREATE TABLE pente (
+  x numeric(25,5),
+  y numeric(25,5),
+  pente_deg numeric(25,5)
+);
+
+COPY pente FROM 'C:/Users/Julie/Documents/pente_test.csv' WITH ENCODING 'UTF8' DELIMITER ',' CSV HEADER;
+psql -U julie -d pente -c "\copy pente FROM 'C:/Users/Julie/Documents/pente_test.csv' WITH ENCODING 'UTF8' DELIMITER ',' CSV HEADER;"
+
+ALTER TABLE pente
+ADD COLUMN geom geometry(Point, 4326);
+
+UPDATE pente
+SET geom = ST_Transform(ST_SetSRID(ST_Point(cast(x as double precision)
+,cast(y as double precision)), 2154), 4326);
+
+SELECT ST_Y(geom) FROM pente LIMIT 100;
