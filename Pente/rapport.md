@@ -127,6 +127,8 @@ CREATE TABLE pente (
 ##Remplissage de la base Pente
 COPY pente FROM '/home/julie/Documents/BigData/25_morceau/pente_test.csv' WITH ENCODING 'UTF8' DELIMITER ',' CSV HEADER;
 
+
+#### ATTENTION A LA PROJECTION : voir requête échantillon
 ##Ajout d'une colonne Geometry
 ALTER TABLE pente
 ADD COLUMN geom geometry(Point, 4326);
