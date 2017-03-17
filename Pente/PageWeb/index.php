@@ -83,7 +83,7 @@
 		<!-- Affichage Map -->
 
 
-		<body onload="initCarte() ;">
+		<body >
 			<div class='container-fluid'>
 				<div class="row">
 					<div class="col-md-8" style="padding:0">
@@ -108,16 +108,49 @@
 			<script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
 			<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 
-			<script language="JavaScript">
+			<?php
+			   $conn_string = "host=localhost port=5432 dbname=pente user=postgres password=postgres";
+			   echo("<script>console.log('PHP: ".$conn_string."');</script>");
+			   $dbconn = pg_connect($conn_string)
+			        or die("Connexion impossible");
+				 echo("<script>console.log('PHP: Connexion réussie');</script>");
 
+				 //Requête pour les coordonnées moyennes
+				$sqllat = 'SELECT AVG(ST_Y(geom)) FROM pente';
+				$lat_moyenne =  pg_query($dbconn, $sqllat);
+				$lat_moy = pg_fetch_result($lat_moyenne, 0, 0);
+				$sqllon = 'SELECT AVG(ST_X(geom)) FROM pente';
+				$lon_moyenne =  pg_query($dbconn, $sqllon);
+				$lon_moy = pg_fetch_result($lon_moyenne, 0, 0);
+
+				 //Requête pour la pente moyenne
+			   $sqlmoy = 'SELECT AVG(pente_deg) FROM pente';
+			   $pente_moyenne =  pg_query($dbconn, $sqlmoy);
+				 $pente_moy = pg_fetch_result($pente_moyenne, 0, 0);
+			   //Requête pour la pente max
+			   $sqlmax = 'SELECT MAX(pente_deg) AS maxpente FROM pente';
+			   $pente_maximale = pg_query($dbconn,  $sqlmax);
+				 $pente_max = pg_fetch_result($pente_maximale,0,0);
+				 $pente_max_diagramme = ceil($pente_max);
+				 echo("<script>console.log('PHP: ". $pente_max_diagramme."');</script>");
+
+
+				?>
+
+			<script language="JavaScript">
+			var lat_moyenne = <?php echo $lat_moy; ?>;
+			var lon_moyenne = <?php echo $lon_moy; ?>;
+
+			initCarte();
 			/**
 				* Jauge Pente Moyenne
 			**/
-			var pente_moyenne = 2.22;
-			var pente_max = 26.97;
+			var pente_moyenne = <?php echo $pente_moy; ?>;
+			var pente_max = <?php echo $pente_max; ?>;
+			var maxValue = <?php echo $pente_max_diagramme; ?>;
 
 			var config_moy = liquidFillGaugeDefaultSettings();
-			config_moy.maxValue=30 ;
+			config_moy.maxValue=maxValue ;
 			config_moy.circleColor = "#FF8C00";
 			config_moy.textColor = "#FF8C00";
 			config_moy.waveTextColor = "#FFAAAA";
@@ -127,7 +160,7 @@
 			var gauge_moy = loadLiquidFillGauge("fillgaugemoy", pente_moyenne, config_moy);
 
 			var config_max = liquidFillGaugeDefaultSettings();
-			config_max.maxValue=30 ;
+			config_max.maxValue=maxValue ;
 			config_max.circleColor = "#B22222";
 			config_max.textColor = "#B22222";
 			config_max.waveTextColor = "#FFAAAA";
@@ -143,7 +176,6 @@
 			var margin = {top: 40, right: 20, bottom: 20, left: 40},
 			    width = 400 ,
 			    height = 300;
-
 
 			var x = d3.scale.ordinal()
 			    .rangeRoundBands([margin.left, width+margin.left], .1);

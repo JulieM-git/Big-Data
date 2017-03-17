@@ -12,31 +12,40 @@
   $map_coord =  $bdd->exec($sql_map);
   //Requête pour la pente moyenne
   $sqlmoy = 'SELECT AVG(pente_deg) FROM pente';
-  $pente_moyenne = $bdd->exec($sqlmoy);
+  $pente_moyenne =  pg_query($dbconn, $sqlmoy);
+  $pente_moy = pg_fetch_result($pente_moyenne, 0, 0);
   //Requête pour la pente max
-  $sqlmax = 'SELECT MAX(pente_deg) FROM pente';
-  $pente_max = $bdd->exec($sqlmax);
+  $sqlmax = 'SELECT MAX(pente_deg) AS maxpente FROM pente';
+  $pente_maximale = pg_query($dbconn,  $sqlmax);
+  $pente_max = pg_fetch_result($pente_maximale,0,0);
   $pente_max_diagramme = ceil($pente_max);
-  //Requête pour la pente moyenne
-  $sqlmin = 'SELECT MIN(pente_deg) FROM pente';
-  $pente_min = $bdd->exec($sqlmin);
+  echo("<script>console.log('PHP: ". $pente_max_diagramme."');</script>");
+
   //Requête pour le diagramme de pente
   $sqlt1 = 'SELECT COUNT(*) FROM pente WHERE pente_deg < 5';
-  $pentest1 = $bdd->exec($sqlt1);
+  $pentest1 = pg_query($dbconn,  $sqlt1);
+  $pent1 = pg_fetch_result($pentest1,0,0);
   $sqlt2 = 'SELECT COUNT(*) FROM pente WHERE pente_deg < 10 AND pente_deg >= 5';
-  $pentest2 = $bdd->exec($sqlt2);
+  $pentest2 = pg_query($dbconn,  $sqlt2);
+  $pent2 = pg_fetch_result($pentest2,0,0);
   $sqlt3 = 'SELECT COUNT(*) FROM pente WHERE pente_deg < 15 AND pente_deg >= 10';
-  $pentest3 = $bdd->exec($sqlt3);
+  $pentest3 = pg_query($dbconn,  $sqlt3);
+  $pent3 = pg_fetch_result($pentest3,0,0);
   $sqlt4 = 'SELECT COUNT(*) FROM pente WHERE pente_deg < 20 AND pente_deg >= 15';
-  $pentest4 = $bdd->exec($sqlt4);
+  $pentest4 = pg_query($dbconn,  $sqlt4);
+  $pent4 = pg_fetch_result($pentest4,0,0);
   $sqlt5 = 'SELECT COUNT(*) FROM pente WHERE pente_deg < 25 AND pente_deg >= 20';
-  $pentest5 = $bdd->exec($sqlt5);
+  $pentest5 = pg_query($dbconn,  $sqlt5);
+  $pent5 = pg_fetch_result($pentest5,0,0);
   $sqlt6 = 'SELECT COUNT(*) FROM pente WHERE pente_deg < 30 AND pente_deg >= 25';
-  $pentest6 = $bdd->exec($sql6);
+  $pentest6 = pg_query($dbconn,  $sql6);
+  $pent6 = pg_fetch_result($pentest6,0,0);
   $sqlt7 = 'SELECT COUNT(*) FROM pente WHERE pente_deg < 35 AND pente_deg >= 30';
-  $pentest7 = $bdd->exec($sqlt7);
+  $pentest7 = pg_query($dbconn,  $sqlt7);
+  $pent7 = pg_fetch_result($pentest7,0,0);
   $sqlt8 = 'SELECT COUNT(*) FROM pente WHERE pente_deg < 40 AND pente_deg >= 35';
-  $pentest8 = $bdd->exec($sqlt8);
+  $pentest8 = pg_query($dbconn,  $sqlt8);
+  $pent8 = pg_fetch_result($pentest8,0,0);
 
 ?>
 
