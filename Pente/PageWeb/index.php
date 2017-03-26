@@ -9,17 +9,18 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css" />
 		<script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
 		<script src="http://d3js.org/d3.v3.min.js" language="JavaScript"></script>
-    <script src="liquidFillGauge.js" language="JavaScript"></script>
+    <script src="fichiers/liquidFillGauge.js" language="JavaScript"></script>
+		<script src="http://leaflet.github.io/Leaflet.heat/dist/leaflet-heat.js"></script>
+		<script src="fichiers/leaflet-heat.js"></script>
+		<script src="fichiers/heatmap.js"></script>
+		<script src="fichiers/leaflet-heatmap.js"></script>
 		<script type="text/javascript" src="https://code.jquery.com/jquery-1.11.1.js"></script>
 		<script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
-<script src="http://leaflet.github.io/Leaflet.heat/dist/leaflet-heat.js"></script>
-
 		<script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/jquery-csv/0.71/jquery.csv-0.71.min.js"></script>
-		<script src="leaflet-heat.js"></script>
 		<script src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script>
-
 		<!-- Insertion des scripts js -->
-		<script src="map.js"></script>
+		<script src="fichiers/grid.js"></script>
+		<script src="fichiers/codeColor.js"></script>
 
 		<!-- CSS pour l'instant -->
 		<style>
@@ -76,6 +77,15 @@
 			  left: 0;
 			}
 			.liquidFillGaugeText { font-family: Arial; font-weight: bold; }
+
+			.arc text {
+			  font: 10px sans-serif;
+			  text-anchor: middle;
+			}
+
+			.arc path {
+			  stroke: #fff;
+			}
 		</style>
 
 	</head>
@@ -97,9 +107,12 @@
 									<svg id="fillgaugemax" width="50%" height="100"></svg>
 									<p style="text-align:center; font-size:160%; color:	#8B0000;">Pente maximale</p>
 							</div>
-							<div class="row" style="margin:auto; min-height:50px;">
-								<svg id="diagramme" width="100%" height="400"></svg>
-								<p style="text-align:center; font-size:160%; color:	#FFA500;">Diagramme de Pentes</p>
+							<div class="row" style="margin:auto; min-height:50px; text-align:rigth;">
+								<svg id="diagramme" width="100%" height="100"></svg>
+							</div>
+							<div class="row" style="margin:auto; min-height:50px; text-align:left; ">
+								<svg id="donut" width="100%" height="400"></svg>
+								<p style="text-align:center; font-size:160%; color:	#FFA500;">Diagrammes de Pentes</p>
 							</div>
 						</div>
 					</div>
@@ -109,6 +122,7 @@
 			<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 
 			<?php
+					ini_set('memory_limit', '1024M');
 			   $conn_string = "host=localhost port=5432 dbname=pente user=postgres password=postgres";
 			   echo("<script>console.log('PHP: ".$conn_string."');</script>");
 			   $dbconn = pg_connect($conn_string)
@@ -132,22 +146,60 @@
 			   $pente_maximale = pg_query($dbconn,  $sqlmax);
 				 $pente_max = pg_fetch_result($pente_maximale,0,0);
 				 $pente_max_diagramme = ceil($pente_max);
-				 echo("<script>console.log('PHP: ". $pente_max_diagramme."');</script>");
 
+
+				 $sql = 'SELECT MIN(ST_Y(geom)), MAX(ST_Y(geom)), MIN(ST_X(geom)), MAX(ST_X(geom)) FROM pente';
+				 $resultminmax = pg_query($dbconn, $sql);
+				 $result = pg_fetch_row( $resultminmax);
+
+				 $sqlcount = 'SELECT COUNT(*) FROM pente';
+				 $cnum = pg_query($dbconn, $sqlcount);
+				 $num = pg_fetch_result($cnum,0,0);
+
+				 $sqlarray = 'SELECT pente_deg FROM pente';
+ 				 $pgarray =  pg_query($dbconn, $sqlarray);
+				 $arr = pg_fetch_all($pgarray);
 
 				?>
 
 			<script language="JavaScript">
 			var lat_moyenne = <?php echo $lat_moy; ?>;
 			var lon_moyenne = <?php echo $lon_moy; ?>;
-
-			initCarte();
-			/**
-				* Jauge Pente Moyenne
-			**/
+			var result = <?php echo json_encode($result); ?>;
+			var arr = <?php echo json_encode($arr); ?>;
 			var pente_moyenne = <?php echo $pente_moy; ?>;
 			var pente_max = <?php echo $pente_max; ?>;
 			var maxValue = <?php echo $pente_max_diagramme; ?>;
+			var num = <?php echo $num; ?>;
+
+			/**
+				* Map
+			**/
+
+			var hauteur = document.documentElement.clientHeight;
+			var mapDiv = document.getElementById('map');
+			mapDiv.style.height = hauteur +'px'; // applique la hauteur de la page
+
+
+				// create the tile layer with correct attribution
+				var tuileUrl = 'http://{s}.tile.osm.org/{z}/{x}/{y}.png';
+				var attrib='Map data © <a href="http://openstreetmap.org">OpenStreetMap</a> contributors';
+				var baseLayer = L.tileLayer(tuileUrl, {
+						minZoom: 8,
+						maxZoom: 17,
+						attribution: attrib
+				});
+
+				var center_map = new L.LatLng(lat_moyenne,lon_moyenne);
+				// gridlayer
+				var grid = L.layerGroup();
+
+				var map = L.map('map').setView(center_map, 13);
+				baseLayer.addTo(map);
+
+			/**
+				* Jauge Pente Moyenne
+			**/
 
 			var config_moy = liquidFillGaugeDefaultSettings();
 			config_moy.maxValue=maxValue ;
@@ -173,9 +225,9 @@
 				* Diagramme Pente
 			**/
 
-			var margin = {top: 40, right: 20, bottom: 20, left: 40},
-			    width = 400 ,
-			    height = 300;
+			var margin = {top: 20, right: 10, bottom: 10, left: 20},
+			    width = 100 ,
+			    height = 75;
 
 			var x = d3.scale.ordinal()
 			    .rangeRoundBands([margin.left, width+margin.left], .1);
@@ -237,6 +289,80 @@
 			  return d;
 			}
 
+			/**
+				* Donut
+			**/
+
+			var margin = {top: 40, right: 20, bottom: 20, left: 40},
+			    width = 400 ,
+			    height = 300;
+	    radius = Math.min(width, height) / 2;
+
+			var colors = d3.scale.ordinal()
+			    .range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56", "#d0743c", "#ff8c00"]);
+
+			var arc = d3.svg.arc()
+			    .outerRadius(radius - 10)
+			    .innerRadius(radius - 70);
+
+			var pie = d3.layout.pie()
+			    .sort(null)
+			    .value(function(d) { return d.number; });
+
+			var svg = d3.select("svg[id='donut']")
+			    .attr("width", width)
+			    .attr("height", height)
+			  .append("g")
+			    .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+
+			d3.tsv("datadonut.tsv", type, function(error, data) {
+			  if (error) throw error;
+
+			  var g = svg.selectAll(".arc")
+			      .data(pie(data))
+			    .enter().append("g")
+			      .attr("class", "arc");
+
+			  g.append("path")
+			      .attr("d", arc)
+			      .style("fill", function(d) { return colors(d.data.degre); });
+
+			  g.append("text")
+			      .attr("transform", function(d) { return "translate(" + arc.centroid(d) + ")"; })
+			      .attr("dy", ".35em")
+			      .text(function(d) { return d.data.degre; });
+			});
+
+			function type(d) {
+			  d.number = +d.number;
+			  return d;
+			}
+
+			/**
+				* HeatMap
+			**/
+			var latmin = result[0];
+					latmax = result[1];
+					lonmin = result[2];
+					lonmax = result[3];
+					nb_col = 100;//Math.sqrt(num);
+					nb_lig = 100; //Math.sqrt(num);
+
+
+			// creation of the grid composed of rectangles
+			for (var i=0; i<nb_lig; i+=10){
+					for (var j=0; j< nb_col; j+=10){
+						// color corresponding of the danger
+						var color=heatMapColorforValue(arr[i*nb_col+j]['pente_deg'], maxValue);
+						// rectangle
+						var rectanglePoints = [[latmin+j*(latmax-latmin)/nb_col, lonmin+i*(lonmax-lonmin)/nb_lig],
+																	[latmin+(j+1)*(latmax-latmin)/nb_col, lonmin+(i+1)*(lonmax-lonmin)/nb_lig]];
+						var rectangle = new L.rectangle(rectanglePoints, {stroke: true, fillOpacity: 0.4, color: color,fillColor: color});
+						// add to the gid
+						rectangle.addTo(grid);
+					}
+				}
+				grid.addTo(map);
 			</script>
 		</body>
 

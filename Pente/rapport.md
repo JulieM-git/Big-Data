@@ -159,3 +159,43 @@ $sql = 'SELECT geom, pente_deg FROM pente';
 $pentes = $bdd->exec($sql);
 ?>
 ```
+
+## Visualisation ##
+Après avoir importer votre base et mis en place pg sur votre serveur, coupiez le dossier /PageWeb et ouvrez le fichier index.html.  
+Attention ! Le chargement de la page est très long car on requête un grand nombre de données et pas en asynchro.
+
+Composition de la page web:  
+- une carte (avec la carte de chaleur dessus)  
+- deux jauges: la pente moyenne et la pente maximale  
+- un diagramme d3.js statique pas très visible pour les données utilisées  
+- un diagramme d3.js donut plus lisible pour les données utilisées  
+
+### La carte et la carte de chaleur ###
+Les fichiers utilisés sont: index.html, grid.js, codeColor.js.  
+Dans index.html:
+- on initialise la carte au centre des données  
+- à ce jour, on crée une carte de chaleur généralisée mais dont les données sont les résultats des requêtes  
+Dans grid.js:  
+on crée une carte de chaleur mais vu le nombre de données en requête cette fonction fait planté l'onglet.  
+Dans codeColor.js:  
+Juste les échelles de couleurs pour la heatmap.  
+
+### Les deux jauges ###
+Les fichiers utilisés sont: index.html,liquidFillGauge.js.  
+Dans index.html:    
+On crée les deux jauges en fonction des résultats des requêtes de pente maximale et moyenne.  
+Dans liquidFillGauge.js:  
+Configuration de d3.js des jauges.  
+
+### Les deux diagrammes ###
+Les fichiers utilisés sont: index.html,liquidFillGauge.js.  
+Dans index.html:    
+On crée les deux diagrammes en fonction de fichiers .tsv obtenus grâce à des requêtes sur la base de données.  
+
+### Autres ###
+La carte de chaleur n'étant pas parfaites de nombreux essais ont été faits, dont un qui peut être retouvés dans /essais/oldmap.js .  
+Cet essai est celui de la soutenance, non dynamique et peut représentatif des données.
+
+### Pour aller plus loin ###
+- Faire la carte de chaleur avec toutes les données
+- Dynamiser la carte de chaleur et les diagrammes en fonction du zoom sur la carte.
